@@ -1,0 +1,83 @@
+package main
+
+import (
+    "bufio"
+    "fmt"
+    "io"
+    "os"
+    "strings"
+    _ "io/ioutil"
+    _ "log"
+     "net/http"
+     "encoding/json" 
+)
+
+/*
+ * Complete the 'getCapitalCity' function below.
+ *
+ * The function is expected to return a STRING.
+ * The function accepts STRING country as parameter.
+ * API URL: https://jsonmock.hackerrank.com/api/countries?name=<country>
+ */
+ 
+ type CountryResponse struct {
+    Data []struct {
+        Name    string `json:"name"`
+        Capital string `json:"capital"`
+    } `json:"data"`
+}
+
+func getCapitalCity(country string) string {
+    apiURL := fmt.Sprintf("https://jsonmock.hackerrank.com/api/countries?name=%s", country)
+
+    response, err := http.Get(apiURL)
+    if err != nil {
+        return "Error: unable to fetch data from the API"
+    }
+    defer response.Body.Close()
+
+    var data CountryResponse
+    err = json.NewDecoder(response.Body).Decode(&data)
+    if err != nil {
+        return "Error: Unable to parse API response"
+    }
+
+    if len(data.Data) > 0 {
+        return data.Data[0].Capital
+    }
+
+    return "-1"
+}
+func main() {
+    reader := bufio.NewReaderSize(os.Stdin, 16 * 1024 * 1024)
+
+    stdout, err := os.Create(os.Getenv("OUTPUT_PATH"))
+    checkError(err)
+
+    defer stdout.Close()
+
+    writer := bufio.NewWriterSize(stdout, 16 * 1024 * 1024)
+
+    country := readLine(reader)
+
+    result := getCapitalCity(country)
+
+    fmt.Fprintf(writer, "%s\n", result)
+
+    writer.Flush()
+}
+
+func readLine(reader *bufio.Reader) string {
+    str, _, err := reader.ReadLine()
+    if err == io.EOF {
+        return ""
+    }
+
+    return strings.TrimRight(string(str), "\r\n")
+}
+
+func checkError(err error) {
+    if err != nil {
+        panic(err)
+    }
+}

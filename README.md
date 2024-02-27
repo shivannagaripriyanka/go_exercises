@@ -1,2 +1,2 @@
 # go_exercises
-Jukshio API's Exercise repo
+ API's Exercise repo
